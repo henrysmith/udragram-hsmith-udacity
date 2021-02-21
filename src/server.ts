@@ -41,6 +41,11 @@ import { filterImageFromURL, deleteLocalFiles, getParameter } from './util/util'
   });
 
 
+  // Uses query parameter to download an image from a public URL, filter the image, and return the result.
+  // QUERY PARAMETER
+  //    image_url: URL of a publicly accessible image
+  // RETURNS
+  //    the filtered image file (JPEG, resize[256, 256], greyscale)
   app.get("/filteredimage", async (req, res, next) => {
     return getParameter(req.query, "image_url")
       .then(image_url => filterImageFromURL(image_url))
@@ -51,7 +56,6 @@ import { filterImageFromURL, deleteLocalFiles, getParameter } from './util/util'
         res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(!!error.message ? ReasonPhrases.UNPROCESSABLE_ENTITY : error)
       });
   });
-
 
   // Start the Server
   app.listen(port, () => {
