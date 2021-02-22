@@ -67,10 +67,22 @@ export function getParameter(query: any, parameterName: string ): Promise<string
     });
   }
 
+// generateJWT
+// Generates a JWT token for a given user.
+// QUERY PARAMETER
+//    userName: username
+// RETURNS
+//    A generated JWT token.
 export function generateJWT(userName: string) : string {
        return jwt.sign(userName, config.jwt.secret);
 }
 
+// requireAuth
+// Validated that a given request has a valid JWT token.
+// PARAMETER
+//    token_bearer: in the authorization header.
+// RETURNS
+//    Validate and user and move forward to the next function.
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
     if (!req.headers || !req.headers.authorization) {

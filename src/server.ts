@@ -57,6 +57,12 @@ import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth, genera
   //    the filtered image file (JPEG, resize[256, 256], greyscale)
   app.get("/filteredimageauth", requireAuth, async (req, res) => runFilteredImage(req, res));
 
+  // Generates a token for a given username
+  // QUERY PARAMETER
+  //    user: any test that represents a user.
+  // RETURNS
+  //    JSON object containing the generated token.
+
   app.post("/token/:user", async (req, res) => {
     let { user } = req.params;    
     return res.status(StatusCodes.CREATED).contentType( "application/json").send({"access_token": generateJWT(user)});
