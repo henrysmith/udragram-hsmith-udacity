@@ -62,7 +62,6 @@ import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth, genera
   //    user: any test that represents a user.
   // RETURNS
   //    JSON object containing the generated token.
-
   app.post("/token/:user", async (req, res) => {
     let { user } = req.params;    
     return res.status(StatusCodes.CREATED).contentType( "application/json").send({"access_token": generateJWT(user)});
