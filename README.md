@@ -1,3 +1,53 @@
+# Student notes
+
+## GitHub 
+- Two branches.  One called _dev_ for development and another called _main_ (AKA master)
+- Main requires review before merging.
+- Merging dev to main to get the prod version.
+
+## Development Server
+
+### Building
+- Since I am using windows, I had to modify the package.json build to make it work in my environment.  I left a copy of the original build command for unix-like envs.
+
+```json
+"build": "npm run clean && tsc && copy package.json www\\package.json && mkdir www\\tmp\\ && cd www && 7z u -tzip Archive.zip . && cd ..",
+"build-original": "npm run clean && tsc && cp package.json www/package.json && mkdir www/tmp/ && cd www && zip -r Archive.zip . && cd ..",
+```
+
+### RESTFUL design
+
+- _/filteredimage_ Get method as requested in the instructions.
+  - Validate _image_url_ is required.
+  - _Unprocessable Entity_ when URL either invalid or not existing.
+  - Delete image after return.
+- _/filteredimageauth_ Get method same as  _filteredimage_ but requires a JWT authentication.
+- _/token/:user_  Post method that returns a JWT token for a given a user.
+
+### HTTP status codes
+
+Using library to avoid magic number 
+```typescript 
+import {
+  StatusCodes,
+  ReasonPhrases
+} from 'http-status-codes';
+```
+
+## Elastic Beanstalk Deployment
+
+- Project built and deployed to EB using *eb init*, *eb create*, *eb deploy*
+- Screenshots:  https://github.com/henrysmith/udragram-hsmith-udacity/tree/main/deployment_screenshots
+
+## Stand Out (Optional)
+
+- Refactor to post to make a call to the provisioned image server.
+- Authentication
+  - Added Get Post method to return a JWT token.
+  - Added Method to validate and verify the JWT token provided.
+  - Postman collection updated.
+  - Added Postman test for the new endpoints and the required features.
+
 # Udagram Image Filtering Microservice
 
 Udagram is a simple cloud application developed alongside the Udacity Cloud Engineering Nanodegree. It allows users to register and log into a web client, post photos to the feed, and process photos using an image filtering microservice.
