@@ -58,11 +58,7 @@ import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth, genera
   app.get("/filteredimageauth", requireAuth, async (req, res) => runFilteredImage(req, res));
 
   app.post("/token/:user", async (req, res) => {
-    let { user } = req.params;
-    if (!user) {
-        return res.status(StatusCodes.BAD_REQUEST).send("user must be provided!");
-    }
-
+    let { user } = req.params;    
     return res.status(StatusCodes.CREATED).contentType( "application/json").send({"access_token": generateJWT(user)});
   });
 
