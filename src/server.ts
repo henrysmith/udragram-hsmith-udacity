@@ -1,10 +1,11 @@
 import express from 'express';
+import { Request, Response } from 'express'
 import {  
   StatusCodes,
   ReasonPhrases
 } from 'http-status-codes';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles, getParameter } from './util/util';
+import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth } from './util/util';
 
 (async () => {
 
@@ -46,16 +47,27 @@ import { filterImageFromURL, deleteLocalFiles, getParameter } from './util/util'
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //    the filtered image file (JPEG, resize[256, 256], greyscale)
-  app.get("/filteredimage", async (req, res, next) => {
+  app.get("/filteredimage", async (req, res) => runFilteredImage(req, res));
+
+  // Uses query parameter to download an image from a public URL, filter the image, and return the result.
+  // NOTE: Requires Barer Authentication
+  // QUERY PARAMETER
+  //    image_url: URL of a publicly accessible image
+  // RETURNS
+  //    the filtered image file (JPEG, resize[256, 256], greyscale)
+  app.get("/filteredimageauth", requireAuth, async (req, res) => runFilteredImage(req, res));
+
+
+  var runFilteredImage = function (req: Request, res: Response){    
     return getParameter(req.query, "image_url")
-      .then(image_url => filterImageFromURL(image_url))
-      .then(fileURLToPath =>
-        res.status(StatusCodes.CREATED).sendFile(fileURLToPath, { "Content-Type": "image/jpeg" }, () => deleteLocalFiles([fileURLToPath])))
-      .catch(error => {
-        console.error(error);
-        res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(!!error.message ? ReasonPhrases.UNPROCESSABLE_ENTITY : error)
-      });
-  });
+    .then(image_url => filterImageFromURL(image_url))
+    .then(fileURLToPath =>
+      res.status(StatusCodes.CREATED).sendFile(fileURLToPath, { "Content-Type": "image/jpeg" }, () => deleteLocalFiles([fileURLToPath])))
+    .catch(error => {
+      console.error(error);
+      res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(!!error.message ? ReasonPhrases.UNPROCESSABLE_ENTITY : error)
+    });
+  }
 
   // Start the Server
   app.listen(port, () => {
