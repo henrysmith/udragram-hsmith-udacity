@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import Jimp = require('jimp');
+import * as jwt from 'jsonwebtoken';
 import { NextFunction } from 'connect';
 import {
     ReasonPhrases,
@@ -8,6 +9,7 @@ import {
     getReasonPhrase,
     getStatusCode,
 } from 'http-status-codes';
+import { config } from '../config/config';
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
 // returns the absolute path to the local image
@@ -65,6 +67,10 @@ export function getParameter(query: any, parameterName: string ): Promise<string
     });
   }
 
+export function generateJWT(userName: string) : string {
+       return jwt.sign(userName, config.jwt.secret);
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
     if (!req.headers || !req.headers.authorization) {
@@ -78,12 +84,10 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
     const token = token_bearer[1];
 
-    return next();
-
-    // return jwt.verify(token, "hello", (err, decoded) => {
-    //   if (err) {
-    //     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ auth: false, message: 'Failed to authenticate.' });
-    //   }
-    //   return next();
-    // });
+    return jwt.verify(token, config.jwt.secret, (err, decoded) => {
+      if (err) {
+        return res.status(StatusCodes.UNAUTHORIZED).send({ auth: false, message: ReasonPhrases.UNAUTHORIZED });
+      }
+      return next();
+    });
 }

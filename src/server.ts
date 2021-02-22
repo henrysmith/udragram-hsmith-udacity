@@ -1,11 +1,11 @@
 import express from 'express';
 import { Request, Response } from 'express'
-import {  
+import {
   StatusCodes,
   ReasonPhrases
 } from 'http-status-codes';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth } from './util/util';
+import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth, generateJWT } from './util/util';
 
 (async () => {
 
@@ -32,7 +32,7 @@ import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth } from 
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-  
+
   //! END @TODO1
 
   // Root Endpoint
@@ -50,23 +50,31 @@ import { filterImageFromURL, deleteLocalFiles, getParameter, requireAuth } from 
   app.get("/filteredimage", async (req, res) => runFilteredImage(req, res));
 
   // Uses query parameter to download an image from a public URL, filter the image, and return the result.
-  // NOTE: Requires Barer Authentication
+  // NOTE: Requires Bearer Authentication
   // QUERY PARAMETER
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //    the filtered image file (JPEG, resize[256, 256], greyscale)
   app.get("/filteredimageauth", requireAuth, async (req, res) => runFilteredImage(req, res));
 
+  app.post("/token/:user", async (req, res) => {
+    let { user } = req.params;
+    if (!user) {
+        return res.status(StatusCodes.BAD_REQUEST).send("user must be provided!");
+    }
 
-  var runFilteredImage = function (req: Request, res: Response){    
+    return res.status(StatusCodes.CREATED).contentType( "application/json").send({"access_token": generateJWT(user)});
+  });
+
+  var runFilteredImage = function (req: Request, res: Response) {
     return getParameter(req.query, "image_url")
-    .then(image_url => filterImageFromURL(image_url))
-    .then(fileURLToPath =>
-      res.status(StatusCodes.CREATED).sendFile(fileURLToPath, { "Content-Type": "image/jpeg" }, () => deleteLocalFiles([fileURLToPath])))
-    .catch(error => {
-      console.error(error);
-      res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(!!error.message ? ReasonPhrases.UNPROCESSABLE_ENTITY : error)
-    });
+      .then(image_url => filterImageFromURL(image_url))
+      .then(fileURLToPath =>
+        res.status(StatusCodes.CREATED).sendFile(fileURLToPath, { "Content-Type": "image/jpeg" }, () => deleteLocalFiles([fileURLToPath])))
+      .catch(error => {
+        console.error(error);
+        res.status(StatusCodes.UNPROCESSABLE_ENTITY).send(!!error.message ? ReasonPhrases.UNPROCESSABLE_ENTITY : error)
+      });
   }
 
   // Start the Server
